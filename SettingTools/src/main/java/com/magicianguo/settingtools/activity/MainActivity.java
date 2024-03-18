@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.SeekBar;
@@ -189,6 +191,12 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         });
+        // 修改分辨率
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        binding.etWidth.setText("" + dm.widthPixels);
+        binding.etHeight.setText("" + dm.heightPixels);
+        binding.etDensity.setText("" + dm.densityDpi);
     }
 
     @Override

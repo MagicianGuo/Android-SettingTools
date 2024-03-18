@@ -9,6 +9,12 @@
     <string name="title_max_refresh_rate_enable">开启最高刷新率（默认关闭）</string>
     <string name="title_min_refresh_rate">最低刷新率：%dHz\n（默认60Hz）</string>
     <string name="title_max_refresh_rate">最高刷新率：%dHz\n（默认60Hz）</string>
+    <string name="title_change_resolution">修改分辨率</string>
+    <string name="save">保存</string>
+    <string name="reset">重置</string>
+    <string name="width">宽度</string>
+    <string name="height">高度</string>
+    <string name="density">像素密度</string>
     <string name="toast_shizuku_permission_denied">Shizuku授权失败！</string>
     <string name="toast_need_shizuku_because_of_android_14">由于Android14限制，需要安装激活Shizuku才能安装此插件！</string>
     <string name="toast_please_install_and_launch_shizuku">请安装Shizuku并启动后再执行！</string>
