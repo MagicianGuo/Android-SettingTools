@@ -1,5 +1,6 @@
 package com.magicianguo.settingtools.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -7,9 +8,11 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.SeekBar;
 
 import androidx.annotation.Nullable;
@@ -19,6 +22,7 @@ import androidx.core.content.FileProvider;
 
 import com.magicianguo.settingtools.R;
 import com.magicianguo.settingtools.constant.FileConstant;
+import com.magicianguo.settingtools.constant.SettingsSecure;
 import com.magicianguo.settingtools.constant.SettingsSystem;
 import com.magicianguo.settingtools.databinding.ActivityMainBinding;
 import com.magicianguo.settingtools.util.PackageUtils;
@@ -29,10 +33,12 @@ import com.magicianguo.settingtools.util.ToastUtils;
 import java.io.File;
 
 import rikka.shizuku.Shizuku;
+import rikka.shizuku.demo.util.ShizukuSystemServerApi;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SELECT_APK = 0;
     private static final int REQUEST_CODE_INSTALL_PLUGIN = 1;
+    private static final int REQUEST_CODE_SAMSUNG_REFRESH_RATE_MODE = 2;
     private float mMinRate = 60;
     private float mMaxRate = 60;
     private ActivityMainBinding binding;
@@ -60,8 +66,55 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void initView() {
         ContentResolver cr = getContentResolver();
-        binding.btnSelectApk.setOnClickListener(v -> selectApk());
+        binding.btnSelectApk.setOnClickListener(v ->
+                shizukuOperation(REQUEST_CODE_SELECT_APK, this::doSelectApk)
+        );
+        // 三星屏幕刷新模式
+        if (Build.BRAND.equals("samsung")) {
+            try {
+                int refreshRateMode = Settings.Secure.getInt(cr, SettingsSecure.REFRESH_RATE_MODE);
+                int id;
+                switch (refreshRateMode) {
+                    case 0:
+                        id = R.id.rb_samsung_rate_mode_standard;
+                        break;
+                    case 1:
+                        id = R.id.rb_samsung_rate_mode_auto;
+                        break;
+                    default:
+                        throw new RuntimeException("Unsupported refresh mode: " + refreshRateMode);
+                }
+                binding.rgSamsungRefreshRateMode.check(id);
+            } catch (Settings.SettingNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            binding.rlSamsungRefreshRateMode.setVisibility(View.VISIBLE);
+            binding.rlSamsungRefreshRateMode.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_UP && binding.rlSamsungRefreshRateMode.isIntercept()) {
+                    shizukuOperation(REQUEST_CODE_SAMSUNG_REFRESH_RATE_MODE, () -> {});
+                }
+                return true;
+            });
+            binding.rgSamsungRefreshRateMode.setOnCheckedChangeListener((group, checkedId) -> {
+                if (checkedId == R.id.rb_samsung_rate_mode_standard) {
+                    saveSamsungRateMode(0);
+                } else if (checkedId == R.id.rb_samsung_rate_mode_auto) {
+                    saveSamsungRateMode(1);
+                }
+            });
+        }
         // 最低刷新率
+        boolean enableMinRate = true;
+        try {
+            mMinRate = Float.parseFloat(Settings.System.getString(cr, SettingsSystem.MIN_REFRESH_RATE));
+        } catch (Exception e) {
+            enableMinRate = false;
+            mMinRate = 60;
+        }
+        binding.swMinRefreshEnable.setChecked(enableMinRate);
+        binding.sbMinRefreshRate.setEnabled(enableMinRate);
+        binding.sbMinRefreshRate.setProgress((int) (mMinRate - 20));
+        binding.tvMinRefreshRate.setText(getString(R.string.title_min_refresh_rate, (int) mMinRate));
         binding.swMinRefreshEnable.setOnCheckedChangeListener((cb, isChecked) -> {
             String minRateStr;
             if (isChecked) {
@@ -91,6 +144,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // 最高刷新率
+        boolean enableMaxRate = true;
+        try {
+            mMaxRate = Float.parseFloat(Settings.System.getString(cr, SettingsSystem.PEAK_REFRESH_RATE));
+        } catch (Exception e) {
+            enableMaxRate = false;
+            mMaxRate = 60;
+        }
+        binding.swMaxRefreshEnable.setChecked(enableMaxRate);
+        binding.sbMaxRefreshRate.setEnabled(enableMaxRate);
+        binding.sbMaxRefreshRate.setProgress((int) (mMaxRate - 20));
+        binding.tvMaxRefreshRate.setText(getString(R.string.title_max_refresh_rate, (int) mMaxRate));
         binding.swMaxRefreshEnable.setOnCheckedChangeListener((cb, isChecked) -> {
             String maxRateStr;
             if (isChecked) {
@@ -128,48 +192,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        ContentResolver cr = getContentResolver();
-        // 最低刷新率
-        boolean enableMinRate = true;
-        try {
-            mMinRate = Float.parseFloat(Settings.System.getString(cr, SettingsSystem.MIN_REFRESH_RATE));
-        } catch (Exception e) {
-            enableMinRate = false;
-            mMinRate = 60;
-        }
-        binding.swMinRefreshEnable.setChecked(enableMinRate);
-        binding.sbMinRefreshRate.setEnabled(enableMinRate);
-        binding.sbMinRefreshRate.setProgress((int) (mMinRate - 20));
-        binding.tvMinRefreshRate.setText(getString(R.string.title_min_refresh_rate, (int) mMinRate));
-        // 最高刷新率
-        boolean enableMaxRate = true;
-        try {
-            mMaxRate = Float.parseFloat(Settings.System.getString(cr, SettingsSystem.PEAK_REFRESH_RATE));
-        } catch (Exception e) {
-            enableMaxRate = false;
-            mMaxRate = 60;
-        }
-        binding.swMaxRefreshEnable.setChecked(enableMaxRate);
-        binding.sbMaxRefreshRate.setEnabled(enableMaxRate);
-        binding.sbMaxRefreshRate.setProgress((int) (mMaxRate - 20));
-        binding.tvMaxRefreshRate.setText(getString(R.string.title_max_refresh_rate, (int) mMaxRate));
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         Shizuku.removeRequestPermissionResultListener(SHIZUKU_PERMISSION_LISTENER);
         binding = null;
     }
 
-    private void selectApk() {
+    private void shizukuOperation(int requestCode, Runnable runnable) {
         if (PackageUtils.isShizukuAvailable()) {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                doSelectApk();
+                runnable.run();
             } else {
-                Shizuku.requestPermission(REQUEST_CODE_SELECT_APK);
+                Shizuku.requestPermission(requestCode);
             }
         } else {
             ToastUtils.longCall(R.string.toast_please_install_and_launch_shizuku);
@@ -184,6 +218,12 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initUri);
         }
         startActivityForResult(intent, REQUEST_CODE_SELECT_APK);
+    }
+
+    private void saveSamsungRateMode(int mode) {
+        grantWriteSecureSettings();
+        shizukuOperation(REQUEST_CODE_SAMSUNG_REFRESH_RATE_MODE,
+                () -> Settings.Secure.putInt(getContentResolver(), SettingsSecure.REFRESH_RATE_MODE, mode));
     }
 
     private void doInstallApkByShizuku(Uri uri) {
@@ -240,6 +280,20 @@ public class MainActivity extends AppCompatActivity {
                 ToastUtils.shortCall(result ? R.string.install_succeed : R.string.install_failed);
             });
         });
+    }
+
+    private void grantWriteSecureSettings() {
+        String permission = Manifest.permission.WRITE_SECURE_SETTINGS;
+        String pkg = getPackageName();
+        int userId = 0;
+        try {
+            if (ShizukuSystemServerApi.PackageManager_checkPermission(permission, pkg, userId)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ShizukuSystemServerApi.PackageManager_grantRuntimePermission(pkg, permission, userId);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

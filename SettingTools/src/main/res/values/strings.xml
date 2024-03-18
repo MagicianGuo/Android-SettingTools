@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">SettingTools</string>
     <string name="title_install_apk_by_shizuku">使用Shizuku安装应用</string>
+    <string name="title_samsung_refresh_rate_mode">三星屏幕刷新率\n(档位：10,24,30,48,60,96,120)</string>
+    <string name="title_samsung_refresh_rate_mode_standard">标准</string>
+    <string name="title_samsung_refresh_rate_mode_auto">自适应</string>
     <string name="select_apk">选择安装包</string>
     <string name="title_min_refresh_rate_enable">开启最低刷新率（默认关闭）</string>
     <string name="title_max_refresh_rate_enable">开启最高刷新率（默认关闭）</string>

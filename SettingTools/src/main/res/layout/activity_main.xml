@@ -30,6 +30,38 @@
                 android:text="@string/select_apk" />
         </RelativeLayout>
 
+        <com.magicianguo.settingtools.view.SamsungRefreshRateModePanel
+            android:id="@+id/rl_samsung_refresh_rate_mode"
+            style="@style/ItemHeight"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/tv_samsung_refresh_rate_mode"
+                style="@style/Title"
+                android:layout_centerVertical="true"
+                android:text="@string/title_samsung_refresh_rate_mode" />
+
+            <RadioGroup
+                android:id="@+id/rg_samsung_refresh_rate_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/rb_samsung_rate_mode_standard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_samsung_refresh_rate_mode_standard" />
+                <RadioButton
+                    android:id="@+id/rb_samsung_rate_mode_auto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_samsung_refresh_rate_mode_auto" />
+            </RadioGroup>
+        </com.magicianguo.settingtools.view.SamsungRefreshRateModePanel>
+
         <com.magicianguo.settingtools.view.RefreshRatePanel
             android:id="@+id/ll_refresh_rate"
             android:layout_width="wrap_content"
