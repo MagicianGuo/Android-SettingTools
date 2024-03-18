@@ -11,10 +11,102 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <Button
-            android:id="@+id/btn_bind"
-            android:layout_width="match_parent"
+
+        <RelativeLayout style="@style/ItemHeight">
+
+            <TextView
+                android:id="@+id/tv_install_apk"
+                style="@style/Title"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:text="@string/title_install_apk_by_shizuku" />
+
+            <Button
+                android:id="@+id/btn_select_apk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="@string/select_apk" />
+        </RelativeLayout>
+
+        <com.magicianguo.settingtools.view.RefreshRatePanel
+            android:id="@+id/ll_refresh_rate"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TestBind" />
+            android:orientation="vertical">
+
+            <RelativeLayout style="@style/ItemHeight">
+
+                <TextView
+                    android:id="@+id/tv_min_refresh_enable"
+                    style="@style/Title"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/title_min_refresh_rate_enable" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_min_refresh_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout style="@style/ItemHeight">
+
+                <TextView
+                    android:id="@+id/tv_min_refresh_rate"
+                    style="@style/Title"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/title_min_refresh_rate" />
+
+                <androidx.appcompat.widget.AppCompatSeekBar
+                    android:id="@+id/sb_min_refresh_rate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="150dp"
+                    android:max="100" />
+            </RelativeLayout>
+
+            <RelativeLayout style="@style/ItemHeight">
+
+                <TextView
+                    android:id="@+id/tv_max_refresh_enable"
+                    style="@style/Title"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/title_max_refresh_rate_enable" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/sw_max_refresh_enable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+            <RelativeLayout style="@style/ItemHeight">
+
+                <TextView
+                    android:id="@+id/tv_max_refresh_rate"
+                    style="@style/Title"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/title_max_refresh_rate" />
+
+                <androidx.appcompat.widget.AppCompatSeekBar
+                    android:id="@+id/sb_max_refresh_rate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="150dp"
+                    android:max="100" />
+            </RelativeLayout>
+        </com.magicianguo.settingtools.view.RefreshRatePanel>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

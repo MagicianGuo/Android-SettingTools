@@ -4,12 +4,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.magicianguo.settingtools.App;
+import com.magicianguo.settingtools.constant.PackageName;
 import com.magicianguo.settingtoolsaidl.ISystemSetting;
+import com.magicianguo.settingtoolsaidl.ISystemSettingCallback;
 
 public class SystemSettingServiceManager {
     private static final String TAG = "SystemSettingServiceManager";
@@ -32,6 +36,17 @@ public class SystemSettingServiceManager {
         }
     };
 
+    private static final ISystemSettingCallback SERVER_CALLBACK = new ISystemSettingCallback.Stub() {
+        @Override
+        public void goWriteSettingPage() {
+            Context context = App.getApp();
+            Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+            intent.setData(Uri.parse("package:" + PackageName.PLUGIN));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+    };
+
     private static void checkBindService() {
         if (iSystemSetting == null) {
             final Intent intent = new Intent();
@@ -41,10 +56,11 @@ public class SystemSettingServiceManager {
         }
     }
 
-    public static void testString() {
+    public static void putString(String name, String value) {
         runWhenConnected(() -> {
             try {
-                Log.d(TAG, "test: str = " + iSystemSetting.testString());
+                Log.d(TAG, "putString: name = " + name + " , value = " + value);
+                iSystemSetting.putString(name, value, SERVER_CALLBACK);
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }

@@ -39,4 +39,11 @@ dependencies {
 //    androidTestImplementation libs.androidx.junit
 //    androidTestImplementation libs.androidx.espresso.core
     implementation project(":SettingToolsAIDL")
+    def shizuku_version = "13.1.5"
+    implementation "dev.rikka.shizuku:api:$shizuku_version"
+    // Add this line if you want to support Shizuku
+    implementation "dev.rikka.shizuku:provider:$shizuku_version"
+    implementation "dev.rikka.hidden:stub:4.3.2"
+    // 访问隐藏接口
+    implementation "org.lsposed.hiddenapibypass:hiddenapibypass:4.3"
 }

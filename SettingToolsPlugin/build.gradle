@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.magicianguo.settingtoolsplugin"
-        minSdk 22
+        minSdk 23
         //noinspection ExpiredTargetSdkVersion
         targetSdk 22
         versionCode 1
@@ -25,6 +25,19 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            outputFileName = "SettingToolsPlugin.apk"
+        }
+        variant.assembleProvider.get().doLast {
+            variant.outputs.configureEach { output ->
+                copy {
+                    from outputFile
+                    into file("../SettingTools/src/main/assets")
+                }
+            }
+        }
     }
 }
 
