@@ -5,18 +5,23 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
-import android.view.Display;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.SeekBar;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +32,7 @@ import com.magicianguo.settingtools.constant.FileConstant;
 import com.magicianguo.settingtools.constant.SettingsSecure;
 import com.magicianguo.settingtools.constant.SettingsSystem;
 import com.magicianguo.settingtools.databinding.ActivityMainBinding;
+import com.magicianguo.settingtools.util.CmdUtils;
 import com.magicianguo.settingtools.util.PackageUtils;
 import com.magicianguo.settingtools.util.SystemSettingServiceManager;
 import com.magicianguo.settingtools.util.TaskPool;
@@ -41,8 +47,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SELECT_APK = 0;
     private static final int REQUEST_CODE_INSTALL_PLUGIN = 1;
     private static final int REQUEST_CODE_SAMSUNG_REFRESH_RATE_MODE = 2;
+    private static final int REQUEST_CODE_SAVE_RESOLUTION = 3;
+    private static final int REQUEST_CODE_RESET_RESOLUTION = 4;
     private float mMinRate = 60;
     private float mMaxRate = 60;
+    private int mWidthPixels = 0;
+    private int mHeightPixels = 0;
+    private int mDensityDpi = 0;
     private ActivityMainBinding binding;
     private final Shizuku.OnRequestPermissionResultListener SHIZUKU_PERMISSION_LISTENER = (requestCode, grantResult) -> {
         if (grantResult == PackageManager.PERMISSION_GRANTED) {
@@ -53,6 +64,50 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             ToastUtils.shortCall(R.string.toast_shizuku_permission_denied);
+        }
+    };
+
+    private final TextWatcher mWidthTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            Log.d("TAG", "onTextChanged: width = " + s);
+            if (binding.etWidth.hasFocus() && !TextUtils.isEmpty(s)) {
+                int height, densityDpi;
+                height = (int) (Integer.parseInt(s.toString()) * 1F * mHeightPixels / mWidthPixels);
+                densityDpi = (int) (mDensityDpi * 1F * Integer.parseInt(s.toString()) / mWidthPixels);
+                binding.etHeight.setText("" + height);
+                binding.etDensity.setText("" + densityDpi);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+        }
+    };
+
+    private final TextWatcher mHeightTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            Log.d("TAG", "onTextChanged: height = " + s);
+            if (binding.etHeight.hasFocus() && !TextUtils.isEmpty(s)) {
+                int width, densityDpi;
+                width = (int) (Integer.parseInt(s.toString()) * 1F * mWidthPixels / mHeightPixels);
+                densityDpi = (int) (mDensityDpi * 1F * Integer.parseInt(s.toString()) / mHeightPixels);
+                binding.etWidth.setText("" + width);
+                binding.etDensity.setText("" + densityDpi);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
         }
     };
 
@@ -192,16 +247,31 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
         // 修改分辨率
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
-        binding.etWidth.setText("" + dm.widthPixels);
-        binding.etHeight.setText("" + dm.heightPixels);
-        binding.etDensity.setText("" + dm.densityDpi);
+        updateResolution();
+        binding.etWidth.addTextChangedListener(mWidthTextWatcher);
+        binding.etHeight.addTextChangedListener(mHeightTextWatcher);
+        binding.btnSaveResolution.setOnClickListener(v -> shizukuOperation(REQUEST_CODE_SAVE_RESOLUTION, () -> {
+            try {
+                int width = Integer.parseInt(binding.etWidth.getText().toString());
+                int height = Integer.parseInt(binding.etHeight.getText().toString());
+                int densityDpi = Integer.parseInt(binding.etDensity.getText().toString());
+                saveResolution(width, height, densityDpi);
+            } catch (Exception e) {
+                ToastUtils.shortCall(R.string.toast_input_resolution_invalid);
+            }
+        }));
+        binding.btnResetResolution.setOnClickListener(v -> {
+            shizukuOperation(REQUEST_CODE_SAVE_RESOLUTION, () -> {
+                CmdUtils.exec("wm size reset\nwm density reset", this::updateResolution);
+            });
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        binding.etWidth.removeTextChangedListener(mWidthTextWatcher);
+        binding.etHeight.removeTextChangedListener(mHeightTextWatcher);
         Shizuku.removeRequestPermissionResultListener(SHIZUKU_PERMISSION_LISTENER);
         binding = null;
     }
@@ -302,6 +372,44 @@ public class MainActivity extends AppCompatActivity {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateResolution() {
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        mWidthPixels = dm.widthPixels;
+        mHeightPixels = dm.heightPixels;
+        mDensityDpi = dm.densityDpi;
+        binding.etWidth.setText("" + mWidthPixels);
+        binding.etHeight.setText("" + mHeightPixels);
+        binding.etDensity.setText("" + mDensityDpi);
+    }
+
+    private void saveResolution(int width, int height, int densityDpi) {
+        int orientation = getResources().getConfiguration().orientation;
+        int minWidth = orientation == Configuration.ORIENTATION_PORTRAIT ? 360 : 640;
+        int minHeight = orientation == Configuration.ORIENTATION_PORTRAIT ? 640 : 360;
+        int minDensity = 100;
+        int maxDensity = 1000;
+        if (width < minWidth) {
+            ToastUtils.shortCall(getString(R.string.toast_width_resolution_should_greater_than, minWidth));
+            return;
+        }
+        if (height < minHeight) {
+            ToastUtils.shortCall(getString(R.string.toast_height_resolution_should_greater_than, minHeight));
+            return;
+        }
+        if (densityDpi < minDensity || densityDpi > maxDensity) {
+            ToastUtils.shortCall(getString(R.string.toast_density_resolution_should_between, minDensity, maxDensity));
+            return;
+        }
+        CmdUtils.exec(String.format("wm size %dx%d\nwm density %d", width, height, densityDpi), this::updateResolution);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateResolution();
     }
 
     @Override

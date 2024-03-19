@@ -21,6 +21,10 @@
     <string name="toast_permission_granted">已授权</string>
     <string name="toast_permission_grant_succeed">授权成功！</string>
     <string name="toast_permission_grant_failed">授权失败！</string>
+    <string name="toast_input_resolution_invalid">分辨率格式不正确！</string>
+    <string name="toast_width_resolution_should_greater_than">宽度应当大于%d！</string>
+    <string name="toast_height_resolution_should_greater_than">高度应当大于%d！</string>
+    <string name="toast_density_resolution_should_between">像素密度应该在%d~%d！</string>
     <string name="apk_is_not_selected">未选择安装包！</string>
     <string name="installing">正在安装……</string>
     <string name="install_succeed">安装成功</string>
