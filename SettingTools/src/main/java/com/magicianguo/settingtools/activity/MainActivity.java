@@ -389,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
         int orientation = getResources().getConfiguration().orientation;
         int minWidth = orientation == Configuration.ORIENTATION_PORTRAIT ? 360 : 640;
         int minHeight = orientation == Configuration.ORIENTATION_PORTRAIT ? 640 : 360;
-        int minDensity = 100;
+        int minDensity = 80;
         int maxDensity = 1000;
         if (width < minWidth) {
             ToastUtils.shortCall(getString(R.string.toast_width_resolution_should_greater_than, minWidth));
