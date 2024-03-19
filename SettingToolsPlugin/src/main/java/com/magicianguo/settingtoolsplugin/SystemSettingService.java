@@ -3,6 +3,7 @@ package com.magicianguo.settingtoolsplugin;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.Settings;
@@ -21,9 +22,11 @@ public class SystemSettingService extends Service {
         @Override
         public void putString(String name, String value, ISystemSettingCallback callback) throws RemoteException {
             Log.d("TAG", "putString: name = " + name + " , value = " + value);
-            if (!Settings.System.canWrite(SystemSettingService.this)) {
-                callback.goWriteSettingPage();
-                return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.System.canWrite(SystemSettingService.this)) {
+                    callback.goWriteSettingPage();
+                    return;
+                }
             }
             Settings.System.putString(getContentResolver(), name, value);
         }
