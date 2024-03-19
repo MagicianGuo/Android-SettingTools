@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
         }));
         binding.btnResetResolution.setOnClickListener(v -> {
             shizukuOperation(REQUEST_CODE_SAVE_RESOLUTION, () -> {
-                CmdUtils.exec("wm size reset\nwm density reset", this::updateResolution);
+                CmdUtils.execWithBinder("wm size reset\nwm density reset", this::updateResolution);
             });
         });
     }
@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
             ToastUtils.shortCall(getString(R.string.toast_density_resolution_should_between, minDensity, maxDensity));
             return;
         }
-        CmdUtils.exec(String.format("wm size %dx%d\nwm density %d", width, height, densityDpi), this::updateResolution);
+        CmdUtils.execWithBinder(String.format("wm size %dx%d\nwm density %d", width, height, densityDpi), this::updateResolution);
     }
 
     @Override
